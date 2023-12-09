@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-#CSRF_TRUSTED_ORIGINS = ['']
+CSRF_TRUSTED_ORIGINS = ['https://neptune-octo-goggles-production.up.railway.app']
 
 # Application definition
 INSTALLED_APPS = [
