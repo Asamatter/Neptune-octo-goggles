@@ -1,2 +1,2 @@
-# neptune-social-media
-Neptune - A Social Media Platform for Connecting People, Written in Django.
+# Neptune 
+A Social Media Platform for Connecting People, Written in Django.
