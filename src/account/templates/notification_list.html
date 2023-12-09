@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_tags %}
+
+{% block content %}
+
+
+<div class="sticky top-12 py-3 backdrop-blur-md w-full">
+  <div class="flex justify-between items-center font-semibold mt-2">
+    <a class="font-semibold text-gray-400 hover:text-gray-300 hover:underline w-auto" href="#" onclick="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>  
+    </a>
+    <h1 class="text-2xl semibold"> {{ notifications.count }} Notifications</h1>
+  </div>
+</div>
+
+  {% if request.user == profile.user %}
+  
+  <div class="mt-6 " >
+
+  {% for item in notifications %}
+<div class="my-4 " >
+
+<div class="flex gap-2 items-center mx-1" >
+
+  {% if item.liked %}
+  <div >
+    <div class="flex items-center gap-2">
+  liked
+  <svg xmlns="http://www.w3.org/2000/svg" fill="#ED4444" viewBox="0 0 24 24" stroke="#ED4444" class="w-4 h-4">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+  </svg>
+  </div>
+  <a class="text-waikawa-gray-200 hover:text-waikawa-gray-100"  href="{% url 'post_detail' item.post.slug %}">{{ item.post }}</a>
+</div>
+  {% endif %}
+
+{% if item.reposted %}
+  <div class="flex flex-col">
+    <div class="flex gap-2 items-center ">
+      reposted
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+      </svg>
+    </div>
+
+  
+
+    <a class="text-waikawa-gray-300 hover:text-waikawa-gray-200 my-1"  href="{% url 'post_detail' item.post.slug %}">{{ item.post }}</a>
+  </div>  
+{% endif %}
+
+{% if item.commented %}
+  <div class="flex flex-col">
+
+    <div class="flex gap-2 items-center">
+      commented
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clip-rule="evenodd" />
+      </svg>
+    </div> 
+    "{{ item.comment.content }}"
+    <a class="text-waikawa-gray-300 hover:text-waikawa-gray-200"  href="{% url 'post_detail' item.post.slug %}">{{ item.post }}</a>
+  </div>
+{% endif %}
+
+{% if item.replied %}
+  <div>
+
+    <div>
+      {% if item.reply.metadata.reply_content  %}
+        replied "{{ item.reply.content|remove_to_username }}"
+        {% else %}
+        replied "{{ item.reply.content|remove_to_username  }}"
+      {% endif %}
+    </div>
+
+    <a class="text-waikawa-gray-300 hover:text-waikawa-gray-200"  href="{% url 'post_detail' item.post.slug %}">
+      {% if item.reply.metadata.reply_content  %}
+        {{ item.reply.metadata.reply_content|remove_to_username }}
+        {% else %}
+        {{ item.comment.content }}
+      {% endif %}
+    </a>
+    
+  </div>
+{% endif %}
+
+</div>
+
+<div class="flex gap-1 items-center mb-1" >
+{% if item.action_initiator.profile.pic %}
+    <a href="{% url 'account:profile' item.action_initiator %}">
+        <img src="{{ MEDIA_URL }}{{ item.action_initiator.profile.pic.url }}" alt="Profile Image" class=" border-3 rounded-md"  style="width:37px; height:37px; border: 3px solid transparent;" />
+    </a>
+    {% else %}
+    <a href="{% url 'account:profile' item.action_initiator %}">
+        <img src="{% static 'account/images/default_pic.jpg' %}" alt="Default Profile Picture" class="border-3 rounded-md"  style="width:37px; height:37px; border: 3px solid transparent;"/>
+    </a>
+{% endif %}
+
+<div class="flex flex-col">
+  <p>@{{item.action_initiator }} {% if item.followed %}started following you{% endif %}</p>
+  <small>{{ item.timestamp|elapsed_time }}</small>
+</div>
+
+</div> 
+
+
+
+{% endfor %}
+</div>
+
+  {% else %}
+  you are not allowed
+  {% endif %}
+  
+
+{% endblock %}

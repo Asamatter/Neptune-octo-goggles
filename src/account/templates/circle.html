@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+  <div id="circle-template" class="flex flex-col mt-4 relative">
+    <div class="flex justify-center items-center">
+      <div class="bg-[#1b1a2c] w-full rounded-sm p-1">
+        {% if circle_obj.pfp %}
+          <img src="{{ MEDIA_URL }}{{ circle_obj.pfp.url }}" alt="Profile Picture" class="rounded-md object-cover w-[115px] h-[105px]" />
+        {% else %}
+          <div class="bg-[#515372] w-[115px] h-[105px] shadow-inner rounded-sm p-2 flex justify-center items-center text-2xl">?</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="mt-6 mb-2 mr-auto text-gray-300">
+      <div class="">
+        <h1 class="text-2xl font-semibold">{{ circle_obj.name }}</h1>
+        <p class="my-2 text-gray-300">{{ circle_obj.members.count }} Members</p>
+        <div class="flex items-center gap-1 my-2 text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          </svg>
+          {{ circle_obj.host }}
+        </div>
+        {% if circle_obj.host == request.user %}
+
+        {% else %}
+          <form method="post" class="join-leave-form mt-2 absolute right-0 top-24" action="{% url 'account:circle-detail' circle_obj.name %}">
+            <input type="hidden" name="join_leave" value="true" />
+            {% csrf_token %}
+            {% if request.user in circle_obj.members.all %}
+              <button type="submit" id="join-leave-button" class="bg-gray-600 bg-opacity-25 hover:bg-opacity-40 text-white font-semibold py-1 px-2 rounded" name="action" value="leave">Leave</button>
+            {% else %}
+              <button type="submit" id="join-leave-button" class="bg-gray-600 bg-opacity-25 hover:bg-opacity-40 text-white font-semibold py-1 px-2 rounded" name="action" value="join">Join</button>
+            {% endif %}
+          </form>
+        {% endif %}
+      </div>
+      <p class="my-2">{{ circle_obj.description }}</p>
+      <small>Since: {{ circle_obj.created_at|date:'F j, Y' }}</small>
+    </div>
+    {% if request.user == circle_obj.host %}
+      <a href="{% url 'account:circle-delete' circle_obj.id %}" class="text-base text-red-500 hover:text-red-600 underline my-2">Delete</a>
+    {% endif %}
+    <hr class="text-gray-600 mt-1" />
+    {% if user in circle_obj.members.all %}
+
+      <form method="POST" enctype="multipart/form-data" class="circle-post-form" action="{% url 'account:circle-detail' circle_obj.name %}">
+        <input type="hidden" name="create_circle_post" value="true" />
+        {% csrf_token %}
+        <div class="mb-1 flex gap-4 items-center">
+          <div class="flex">
+            <input type="text" id="{{ circle_post_form.title.id_for_label }}" name="{{ circle_post_form.title.name }}" placeholder="What do you want to share?" class="px-4 py-3 bg-[#1b1a2c] w-[230px] text-white border-0 rounded-sm text-sm focus:outline-none focus:border-gray-600 focus:ring-2" required />
+          </div>
+          <div>
+            <label for="{{ circle_post_form.img.id_for_label }}" class="text-gray-400 cursor-pointer b">
+              <i class="fas fa-image fa-lg"></i>
+              <input type="file" id="{{ circle_post_form.img.id_for_label }}" name="{{ circle_post_form.img.name }}" class="inset-0 opacity-0 w-20  cursor-pointer focus:outline-none" />
+            </label>
+          </div>
+        </div>
+      </form>
+    {% endif %}
+    {% if circle_obj.privacy == 'public' or user in circle_obj.members.all %}
+      <div class="">
+        {% if circle_posts %}
+          {% for post in circle_posts %}
+            <div class="my-6 ml-4">
+              <div class="flex gap-2 items-center">
+                {% if post.user.profile.pic %}
+                  <a href="{% url 'account:profile' post.user.username %}"><img src="{{ MEDIA_URL }}{{ post.user.profile.pic.url }}" alt="Profile Image" class="border-2 rounded-md" style="width:37px;
+                                height:37px;
+                                border: 3px solid transparent" /></a>
+                {% else %}
+                  <a href="{% url 'account:profile' post.user.username %}"><img src="{% static 'account/images/default_pic.jpg' %}" alt="Default Profile Picture" class="border-2 rounded-md" style="width:37px;
+                                height:37px;
+                                border: 3px solid transparent" /></a>
+                {% endif %}
+                <div>
+                  <p class="text-sm mr-2 font-semibold text-woodsmoke-100">{{ post.user }}</p>
+                  <small class="text-xs text-gray-500">{{ post.created_at|elapsed_time }}</small>
+                </div>
+              </div>
+              <h1 class="font-semibold my-2 text-gray-100 break-words">{{ post.title }}</h1>
+              <div class="break-words">
+                <p class="my-3">{{ post.content }}</p>
+                <div class="relative my-3">
+                  {% if post.img %}
+                    <img src="{{ MEDIA_URL }}{{ post.img.url }}" alt="Profile Picture" class="rounded-md object-cover w-[580px] h-[308px]" />
+                  {% endif %}
+                </div>
+                <div class="flex items-center gap-2 text-gray-400">
+                  <form class="like-form" method="POST" action="{% url 'account:like' post.circle.name %}">
+                    <input type="hidden" name="circle_post" value="{{ post.id }}" />
+                    {% csrf_token %}
+                    <button type="submit">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                      </svg>
+                    </button>
+                  </form>
+                  <span class="mb-1 text-sm">{{ post.like_set.count }}</span>
+                  {% for like in post.like_set.all|limit_users:10 %}
+                    {% if like.user.profile.pic %}
+                      <a href="{% url 'account:profile' like.user.username %}"><img src="{{ MEDIA_URL }}{{ like.user.profile.pic.url }}" alt="Profile Image" class="border-2 rounded-full" style="width:28px;
+                                    height:28px;
+                                    border: 3px solid transparent" /></a>
+                    {% else %}
+                      <a href="{% url 'account:profile' like.user.username %}"><img src="{% static 'account/images/default_pic.jpg' %}" alt="Default Profile Picture" class="border-2 rounded-full" style="width:28px;
+                                    height:28px;
+                                    border: 3px solid transparent" /></a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="flex justify-center items-center mt-12">No posts yet.</p>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="flex justify-center items-center my-12">this content is private only joined Members can see it</div>
+    {% endif %}
+  </div>
+{% endblock %}

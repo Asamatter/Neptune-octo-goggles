@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div id="groups">
+
+  <div class="sticky top-12 py-3 backdrop-blur-md w-full">
+    <div class="flex justify-between items-center font-semibold mt-2">
+      <a class="font-semibold text-gray-400 hover:text-gray-300 hover:underline w-auto" href="#" onclick="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+      </a>
+      <h1 class="text-2xl semibold mr-4">People</h1>
+    </div>
+  </div>
+
+  <div id="circle-template" class="container mx-auto mt-8">
+    <!-- Search Form -->
+    <div class="mt-5">
+      <form hx-trigger="submit">
+        <input value="" placeholder="Search" name="query" type="query" hx-get="{% url 'people_search' %}" hx-trigger="keyup changed delay:500ms" hx-target="#people-search-results" hx-swap="innerHTML" hx-select="#people-search-results" class="input top-0 sticky mb-4 px-4 w-full text-gray-200 bg-[#2C2D40] rounded-md py-2 outline-none" />
+      </form>
+    </div>
+
+    <div id="people-search-results">
+      {% include 'includes/htmx/people_search_results.html' %}
+    </div>
+
+    {% if results.paginator.num_pages > 1 %}
+        <div class="pagination mx-auto mt-6 fixed bottom-0">
+          <span class="step-links flex items-center">
+            {% if results.has_previous %}
+              <a href="?page={{ results.previous_page_number }}" class="mr-2 px-1 text-sm hover:text-white hover:underline" hx-get="?page={{ results.previous_page_number }}" hx-trigger="click" hx-target="#groups" hx-swap="innerHTML" hx-select="#groups">previous</a>
+            {% endif %}
+            <span class="current bg-orange-950 shadow-inner text-white rounded-sm px-1">Page {{ results.number }} of {{ results.paginator.num_pages }}.</span>
+            {% if results.has_next %}
+              <a href="?page={{ results.next_page_number }}" class="ml-2 px-1 text-sm hover:text-white hover:underline" hx-get="?page={{ results.next_page_number }}" hx-trigger="click" hx-target="#groups" hx-swap="innerHTML" hx-select="#groups">next</a>
+            {% endif %}
+          </span>
+        </div>
+      {% endif %}
+
+  </div>
+
+</div> 
+{% endblock %}

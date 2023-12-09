@@ -1,0 +1,74 @@
+<!-- Registration Template -->
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<!-- User is already authenticated -->
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-sm mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+    <div class="p-6">
+      <h2 class="text-2xl font-bold">You already have an account</h2>
+    </div>
+  </div>
+</div>
+{% else %}
+<!-- User is not authenticated -->
+
+<div class="flex justify-center items-center mt-20 w-full">
+  <div class="w-96 p-6 rounded ">
+    <h2 class="text-white  font-helvetica text-3xl mb-4 text-center">Create an account</h2>
+    <form method="post">
+      {% csrf_token %}
+      <!-- Username field -->
+      <div class="mb-3 text-gray-300">
+        <label for="id_email" class="block text-gray-300 mb-2">Username</label>
+        <input id="field1" type="text" name="{{ form.username.name }}" placeholder="Username" class="bg-transparent placeholder-gray-500 w-full py-2 px-4 rounded border border-gray-950 " onkeydown="moveToNextField(event, 'field2')" required>
+        {% for error in form.username.errors %}
+        <div class="text-red-700 text-sm mt-1">{{ error }}</div>
+        {% endfor %}
+      </div>
+      <!-- Password fields -->
+      <div class="mb-3 text-gray-300">
+        <label for="id_email" class="block text-gray-300 mb-2">Password</label>
+        <input id="field2"  type="password" name="{{ form.password1.name }}" placeholder="Password" class="bg-transparent placeholder-gray-500 w-full py-2 px-4 rounded border border-gray-950" onkeydown="moveToNextField(event, 'field3')">
+        {% for error in form.password1.errors %}
+        <div class="text-red-700 text-sm mt-1">{{ error }}</div>
+        {% endfor %}
+      </div>
+      <div class="mb-3 text-gray-300">
+        <label for="id_email" class="block text-gray-300 mb-2">Confirm password</label>
+        <input id="field3" type="password" name="{{ form.password2.name }}" placeholder="Confirm Password" class="bg-transparent placeholder-gray-500 w-full py-2 px-4 rounded border border-gray-950" onkeydown="moveToNextField(event, 'field4')">
+        {% for error in form.password2.errors %}
+        <div class="text-red-700 text-sm mt-1">{{ error }}</div>
+        {% endfor %}
+      </div>
+      <!-- Email field -->
+      <div class="mb-4 text-gray-300">
+        <label for="id_email" class="block text-gray-300 mb-2">E-mail address</label>
+        <input id="field4" type="email" name="{{ form.email.name }}" placeholder="Email" class="bg-transparent placeholder-gray-500 w-full py-2 px-4 rounded border border-gray-950" required>
+        {% for error in form.email.errors %}
+        <div class="text-red-700 text-sm mt-1">{{ error }}</div>
+        {% endfor %}
+      </div>
+      {% if form.non_field_errors %}
+      <div class="mt-1">
+        <ul class="text-red-700">
+          {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <!-- Register button -->
+      <button class="bg-orange-700 mt-3 hover:bg-opacity-75 text-white font-bold py-2 px-4 rounded w-full" type="submit">Register</button>
+    </form>
+    <!-- Sign in and Reset Password links -->
+    <div class="mt-4 text-center">
+      <a class="text-gray-200 hover:text-gray-300 hover:underline" href="{% url 'account:login' %}">Sign In</a> 
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

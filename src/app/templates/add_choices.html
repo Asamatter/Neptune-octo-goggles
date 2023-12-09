@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block content %}
+  {% if post.choices_added %}
+    <div class="flex flex-col justify-center items-center mt-20 text-xl font-semibold">
+      <p>you can't be here</p>
+      <img src="https://www.pngmart.com/files/22/Crying-Cat-Meme-PNG-Isolated-HD.png"
+           alt="Surreal Meme Cat"
+           class="rounded-full"
+           style="width:195px;
+                  height:195px">
+    </div>
+  {% else %}
+    <div id="AddChoiceContainer">
+      <h1 class="text-2xl font-bold mb-2 mt-6">Add Choices for "{{ post.title }}"</h1>
+      <div class="rounded-md p-4 w-full bg-transparent"
+           style="border-bottom: 1px solid gray">
+        <h2 class="text-xl font-semibold mb-2">Tips for Better Polls</h2>
+        <p class="text-gray-600">
+          Suggest short and clear options. Remember that the more options you provide, the better. Keep in mind that options can't be edited after post creation.
+        </p>
+      </div>
+      <form method="post"
+            class="AddChoiceForm space-y-4"
+            action="{% url 'add_choices' post.slug %}">
+        {% csrf_token %}
+        <div>
+          <label for="{{ form.title.id_for_label }}"
+                 class="block font-medium text-gray-200 ">Title</label>
+          <input type="text"
+                 id="{{ form.title.id_for_label }}"
+                 name="{{ form.title.name }}"
+                 placeholder="Enter title"
+                 class="bg-transparent text-gray-300 rounded-lg py-2 px-4 mx-auto w-full focus:outline-none focus:border-[#7d5a52]"
+                 required
+                 style="border: 1px solid #9b756e">
+        </div>
+        <div class="flex justify-between">
+          <button class="button1  bg-[#9b756e] hover:bg-opacity-75 text-white py-1 px-2 rounded-md  ml-2"
+                  type="submit"
+                  name="add_choices"
+                  value="button1">Add Option</button>
+          <button class="bg-purple-900 hover:bg-purple-800 text-white py-1 px-2 rounded-md"
+                  type="submit"
+                  name="send">Submit</button>
+        </div>
+      </form>
+      {% if messages %}
+        <ul class="messages">
+          {% for message in messages %}
+            <li>
+              {% if message.tags %}class="{{ message.tags }}"{% endif %}
+              >{{ message }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      <p class="my-3 text-gray-400 ml-2">Options added: {{ post.choice_set.count }}</p>
+      <h2 class="text-lg font-bold mt-8">Choices:</h2>
+      <ul class="my-4">
+        {% for choice in post.choice_set.all %}
+          <li class="flex items-center justify-between my-2">
+            <h2>{{ choice.title }}</h2>
+            <form class="choice-delete-form"
+                  method="post"
+                  action="{% url 'delete_choice' choice.pk %}">
+              {% csrf_token %}
+              <button type="submit"
+                      class="text-white py-1 px-3 rounded-md bg-red-600 hover:bg-red-700">Delete</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+  <script>
+  
+//add choice form
+function addChoice(form) {
+  return new Promise(function(resolve, reject) {
+    var url = form.attr('action');
+    $.ajax({
+      type: 'POST',
+      url: url,
+      data: form.serialize(),
+      headers: { 'X-CSRFToken': form.find('input[name=csrfmiddlewaretoken]').val() },
+      success: function(response) {
+        console.log('Response:', response);
+        if (response.success) {
+          resolve('choice was successfully posted');
+        } else {
+          reject('there was an issue with the choice posting');
+        }
+      },
+      error: function() {
+        reject('error'); 
+      }
+    }); });
+}
+
+$(document).on('click', '.AddChoiceForm button', function(event) {
+  var buttonValue = $(this).val();
+  
+  if (buttonValue === 'button1') {
+      event.preventDefault(); 
+      var form = $(this).closest('form');
+      $('#loading-content').show();
+      
+      addChoice(form)
+          .then(function() {
+              form.trigger('reset');
+              $('#loading-content').hide();
+              return $('#AddChoiceContainer').load(window.location.href + ' #AddChoiceContainer > *');
+          })
+          .catch(function() {
+              $('#loading-content').hide();
+              console.error('Choice posting failed.');
+          });
+  } else if (buttonValue === 'send') {
+      $.ajax({
+          type: 'POST',
+          url: form.attr('action'),
+          data: form.serialize(),
+          headers: { 'X-CSRFToken': form.find('input[name=csrfmiddlewaretoken]').val() },
+          success: function(response) {
+              console.log('Response:', response); },
+          
+      }); }  });
+
+
+//delete choice
+
+function deleteChoice(form) {
+  return new Promise(function(resolve, reject) {
+    var url = form.attr('action');
+    $.ajax({
+      type: 'POST',
+      url: url,
+      data: form.serialize(),
+      headers: { 'X-CSRFToken': form.find('input[name=csrfmiddlewaretoken]').val() },
+      success: function(response) {
+        console.log('Response:', response);
+        if (response.success) {
+          resolve('Choice deleted successfully');
+        } else {
+          reject('Choice deletion failed');
+        }
+      },
+      error: function() {
+        reject('Choice deletion encountered an error');
+      }
+    }); });
+}
+$(document).on('submit', '.choice-delete-form', function(event) {
+  event.preventDefault();
+  var form = $(this);
+  $('#loading-content').show();
+
+  deleteChoice(form)
+    .then(function() {
+      $('#loading-content').hide();
+      console.log('Choice deleted successfully.');
+      return $('#AddChoiceContainer').load(window.location.href + ' #AddChoiceContainer > *'); })
+    .catch(function() {
+      $('#loading-content').hide();
+      console.error('Choice deletion failed.'); }); });
+
+
+
+
+  </script>
+{% endblock %}

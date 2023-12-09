@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-8">
+  <h2 class="text-xl font-semibold mb-2">Delete Forever</h2>
+  {% if request.user == post.author %}
+    <p class="mb-4 text-red-600">Are you sure you want to delete "{{ post.title }}"?</p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded">Confirm</button>
+    </form>
+    <a href="{% url 'post_detail' post.slug %}" class="text-lg hover:underline text-gray-400 hover:text-gray-600 mt-6 ml-1">Cancel</a>
+  {% else %}
+    <p class="mb-4 text-gray-600">You do not have permission to delete this post.</p>
+    <a href="{% url 'post_detail' post.slug %}" class="text-lg hover:underline text-gray-400 hover:text-gray-600 mt-6 ml-1">Go back</a>
+  {% endif %}
+</div>
+{% endblock %}

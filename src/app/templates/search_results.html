@@ -1,0 +1,16 @@
+<!-- search_results.html -->
+{% if results %}
+<div class="scroll-container h-60 overflow-y-auto scrollbar rounded-lg p-4" style="border: 1px solid #1a202c;">
+    <ul class="list-disc">
+        {% for post in results %}
+            <li>
+                <a class="font-semibold my-2 text-white" href="{% url 'post_detail' post.slug %}">
+                    <span id="post-title" class="text-sm my-2">{{ post.title|truncatechars:30 }}</span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+    <p>No results found.</p>
+{% endif %}

@@ -1,0 +1,57 @@
+{% load static %}
+{% load custom_tags %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{% block title %}Neptune{% endblock %}</title>
+    <!-- Include Bootstrap CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.0/css/bootstrap.min.css"/>
+    <!-- Include Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/output.css' %}" />
+    <link rel="stylesheet" href="{% static 'custom/custom.css' %}" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+   <!--GoogleFonts-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Helvetica+Neue">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cabin&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans+Condensed:wght@500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Roboto&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+  </head>
+
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="bg-[#181A1C]">
+  
+  
+
+
+  {% include 'includes/navbar.html' %}
+  <div id="loading-content" class="hidden">
+  </div>
+
+    
+  {% include 'includes/additional_content_left.html' %}
+   
+  
+  <div class="relative break-words font-cabin mx-auto text-white  xl:w-[590px] lg:w-6/12 md:w-7/12 sm:w-9/12 md:px-1 rounded-md  min-h-screen pl-4 pr-2" >
+      {% block content %} 
+      {% endblock %}
+  </div>
+
+
+  {% if request.path != '/hashtags/' %}
+    {% include 'includes/additional_content_right.html' %}
+  {% endif %}
+
+
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.0/js/bootstrap.min.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+
+</body>
+</html>

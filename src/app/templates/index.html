@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+  <div class="my-4">
+    {% if user.is_authenticated %}
+      <form id="form-post-mainpage" class="space-y-3 mb-6" method="POST">
+        {% csrf_token %}
+        <div class="flex gap-2 text-waikawa-gray-400">
+          <input type="text"
+                 id="{{ form.title.id_for_label }}"
+                 name="{{ form.title.name }}"
+                 placeholder="What are your thoughts?"
+                 class="placeholder-[#B68D87] bg-transparent text-waikawa-gray-200 border-2 border-[#B68D87] rounded-md p-2 w-full focus:outline-none focus:border-[#8c6f76] "
+                 required>
+          <div class="flex justify-end">
+            <button class="bg-[#2911B3] hover:bg-opacity-75 text-white py-1 px-3 rounded-md"
+                    type="submit">Share</button>
+          </div>
+        </div>
+      </form>
+    {% endif %}
+    <div class="flex items-center justify-between mx-auto my-9 text-gray-700">
+      <small>Hey there, {{ request.user }}!</small>
+
+
+      <div class="flex items-center gap-3">
+        <a class="block md:hidden" href="{% url 'hashtags' %}">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               class="h-5 w-5 text-emerald-600 hover:text-emerald-400"
+               viewBox="0 0 20 20"
+               fill="currentColor">
+            <path fill-rule="evenodd" d="M9.243 3.03a1 1 0 01.727 1.213L9.53 6h2.94l.56-2.243a1 1 0 111.94.486L14.53 6H17a1 1 0 110 2h-2.97l-1 4H15a1 1 0 110 2h-2.47l-.56 2.242a1 1 0 11-1.94-.485L10.47 14H7.53l-.56 2.242a1 1 0 11-1.94-.485L5.47 14H3a1 1 0 110-2h2.97l1-4H5a1 1 0 110-2h2.47l.56-2.243a1 1 0 011.213-.727zM9.03 8l-1 4h2.938l1-4H9.031z" clip-rule="evenodd" />
+          </svg>
+        </a>
+        <a class="hover:text-gray-300 text-gray-400"
+           href="{% url 'group_search' %}">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke-width="1.5"
+               stroke="currentColor"
+               class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+          </svg>
+        </a>
+      </div>
+    </div>
+    <div id="post-template" class="text-lg my-4 mb-2 p-0">
+      {% for post in posts %}
+        {% if post.choices_added %}
+          {% include 'includes/posts.html' %}
+          {% include 'includes/voting.html' %}
+        {% endif %}
+      {% endfor %}
+    </div>
+    <!-- pagination links -->
+    {% if posts.paginator.num_pages > 1 %}
+      <div class="pagination mx-6 mt-6 mb-16">
+        <span class="step-links flex items-center">
+          {% if posts.has_previous %}
+            <a href="?page={{ posts.previous_page_number }}"
+               class="mr-2 px-1 text-sm hover:text-pink-300">previous</a>
+          {% endif %}
+          <span class="current lg:bg-orange-950 bg-pink-950 shadow-inner text-white rounded-sm px-1">
+            Page {{ posts.number }} of {{ posts.paginator.num_pages }}.
+          </span>
+          {% if posts.has_next %}
+            <a href="?page={{ posts.next_page_number }}"
+               class="ml-2 px-1 text-sm hover:text-pink-300">next</a>
+          {% endif %}
+        </span>
+      </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+      <div id="bottom_bar"
+           class="block px-4 bg-[#141617] border-t border-gray-900 rounded-sm md:hidden py-1 fixed bottom-0 left-0 right-0 w-full">
+        <div class="flex justify-between text-gray-500">
+          <a href="{% url 'home' %}">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke-width="1.5"
+                 stroke="currentColor"
+                 class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+          </a>
+          <div class="flex gap-3  items-center">
+            <a href="{% url 'create_post' %}">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   fill="none"
+                   viewBox="0 0 24 24"
+                   stroke-width="1.5"
+                   stroke="currentColor"
+                   class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+              </svg>
+            </a>
+            <a href="{% url 'bookmark_list' %}">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   fill="none"
+                   viewBox="0 0 24 24"
+                   stroke-width="1.5"
+                   stroke="currentColor"
+                   class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+              </svg>
+            </a>
+            <div class="relative inline-block">
+              <a href="{% url 'account:inbox' request.user.username %}">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.5"
+                     stroke="currentColor"
+                     class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                </svg>
+              </a>
+              {% if new_message %}
+                <a class="" href="{% url 'account:inbox' request.user.username %}">
+                  <span class="absolute -top-4 -right-3 bg-red-600 text-white rounded-full px-2 py-1 text-xs font-semibold"> {{ new_message }} </span>
+                </a>
+              {% else %}
+                <a class="" href="{% url 'account:inbox' request.user.username %}">
+                  <span class="absolute -top-4 -right-3 bg-red-600 text-white rounded-full px-2 py-1 text-xs font-semibold"> {{ new_message }} </span>
+                </a>
+              {% endif %}
+            </div>
+            <div class="relative inline-block">
+              <a href="{% url 'account:notifications' request.user.username %}?mark_as_read=true">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.5"
+                     stroke="currentColor"
+                     class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                </svg>
+              </a>
+              {% if unread_noti %}
+                <span class="absolute -top-4 -right-3 bg-[#FF6740] text-white rounded-full px-2 py-1 text-xs font-semibold"> {{ unread_noti }} </span>
+              {% endif %}
+            </div>
+            <a href="{% url 'account:profile' request.user.username %}">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   fill="none"
+                   viewBox="0 0 24 24"
+                   stroke-width="1.5"
+                   stroke="currentColor"
+                   class="w-6 h-6 ">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endblock %}

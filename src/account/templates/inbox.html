@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block content %}
+  {% if user.is_authenticated and request.user.username == username %}
+    <div class="sticky top-12 py-3 backdrop-blur-md w-full z-20">
+      <div class="flex justify-between items-center font-semibold mt-2">
+        <a class="font-semibold text-gray-400 hover:text-gray-300 hover:underline w-auto" href="#" onclick="goBack()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+        </a>
+
+        <div class="flex items-center gap-3 mr-2">
+          <h1 class="text-xl semibold text-opacity-75">
+            Messages
+          </h1>
+          <a class="hover:text-gray-200" href="{% url 'people_search' %}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% for participant_username, last_message in last_messages.items %}
+      <div class="flex flex-col p-2 hover:bg-port-gore-950 rounded my-2" style="border:1px solid #25262b;">
+        <div class="flex gap-2">
+          {% if last_message.sender.profile.pic %}
+            <a href="{% url 'account:profile' last_message.sender %}"><img src="{{ MEDIA_URL }}{{ last_message.sender.profile.pic.url }}" alt="Profile Image" class="border-3 rounded-full" style="width:35px; height:35px; border: 3px solid transparent; border-radius: 9999px;" /></a>
+          {% else %}
+            <a href="{% url 'account:profile' last_message.sender %}"><img src="{% static 'account/images/default_pic.jpg' %}" alt="Default Profile Picture" class="border-3 rounded-full" style="width:35px; height:35px; border: 3px solid transparent; border-radius: 9999px;" /></a>
+          {% endif %}
+
+          <div class="flex flex-col">
+            <p class="text-gray-300">{{ last_message.sender }}</p>
+            <p class="text-xs text-gray-600">{{ last_message.created_at|elapsed_time }}</p>
+          </div>
+
+          <div class="flex flex-col">
+            <a class="hover:text-sky-400 flex flex-col" href="{% url 'account:conversation' participant_username last_message.id %}?mark_as_read=true"><span class="text-sky-400">{{ last_message.content|truncatechars:37 }}</span></a>
+          </div>
+
+          {% for username, unread_count in unread_messages_count_by_user.items %}
+            {% if username == participant_username %}
+              <div id="unread-count-{{ username }}" class="bg-[#a5285c] rounded-full mt-1 w-4 h-4 text-sm flex justify-center items-center">
+                <p class="text-white font-semibold">{{ unread_count }}</p>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+        {% empty %}
+        <span class="text-gray-300 mt-20">There are no messages to show.</span>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="flex justify-center text-red-700">You do not have permission to access this page.</p>
+  {% endif %}
+{% endblock %}

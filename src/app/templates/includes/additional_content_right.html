@@ -1,0 +1,37 @@
+{% load static %}
+{% load custom_tags %}
+
+<div class="overflow-y-auto scrollbar h-[600px] fixed top-20 mt-1 xl:right-[126px] text-white w-[300px] lg:block lg:right-6 lg:w-[210px] hidden xl:block rounded-sm border-l-2 border-[#2C2C2C] p-1">
+  <p class="text-white font-semibold my-2 ml-1">Trending</p>
+  <p class="text-gray-400 ml-1">
+    {% date_format %}
+  </p>
+
+  <div class="absolute mt-3">
+    <ul>
+      {% get_tags as tags_queryset %}
+      {% for tag in tags_queryset %}
+        <li class="flex flex-col mt-2 mb-3 ml-1">
+          <div class="flex gap-2 items-center">
+            <a class="hover:text-white hover:underline" href="{% url 'tag' tag.text %}?={{ tag.id }}">#{{ tag.text }}</a>
+          </div>
+      
+          <div class="">
+            <div class="flex gap-2 justify-between items-center">
+              <small class="text-gray-400">{{ tag.post_count }} posts</small>
+              <small class="text-gray-400">{{ tag.people_using_tag }} user{{ tag.people_using_tag|pluralize:'s' }}</small>
+            </div>
+      
+            <div class="flex items-center gap-2">
+              <small class="text-emerald-400 text-xs">{{ tag.last_post_date|elapsed_time }}</small>
+              {% if tag.max_post_title %}
+                <p class="text-gray-400 text-sm">{{ tag.max_post_title|truncatechars:25 }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+      
+    </ul>
+  </div>
+</div>

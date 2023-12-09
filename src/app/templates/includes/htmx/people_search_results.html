@@ -1,0 +1,58 @@
+{% load static %}
+{% load custom_tags %}
+{% if results %}
+  <div id="post-template">
+    {% for result in results %}
+      <div class="bg-transparent hover:bg-opacity-80 p-2 relative transition duration-300">
+        <div class="flex gap-3">
+          <div class="flex items-center gap-2">
+            {% if result.profile.user.pic  %}
+            <a href="{% url 'account:profile' result.profile.user %}">
+           
+                <img src="{{ MEDIA_URL }}{{ result.profile.pic.url }}"
+                     alt="Profile Picture"
+                     class="smoothing rounded-full object-cover "
+                     style="width:37px;
+                            height:37px" />
+              </a>
+            {% else %}
+            <a href="{% url 'account:profile' result %}">
+                <img src="{% static 'account/images/default_pic.jpg' %}"
+                     alt="Default Profile Picture"
+                     class="rounded-full"
+                     style="width:37px;
+                            height:37px" />
+              </a>
+            {% endif %}
+            <div class="flex flex-col">
+              {{ result.profile.user }}
+              <small class="text-emerald-600">{{ result.last_login|elapsed_time }}</small>
+            </div>
+          </div>
+          {% if request.user != result.profile.user %}
+            <form class="follow-form"
+                  method="POST"
+                  action="{% url 'account:profile' result %}">
+              {% csrf_token %}
+              <input type="hidden" name="follow_unfollow" value="true">
+              {% if result.profile in request.user.profile.following.all %}
+                <button class="bg-gray-800 hover:bg-opacity-75 px-2 py-1 rounded-md font-semibold"
+                        type="submit"
+                        name="toggle"
+                        value="unfollow">Unfollow</button>
+              {% else %}
+                <button class="bg-[#2911B3] hover:bg-opacity-75 px-3 py-1 rounded-md font-semibold"
+                        type="submit"
+                        name="toggle"
+                        value="follow">Follow</button>
+              {% endif %}
+            </form>
+          {% endif %}
+        </div>
+        <span class="text-sm text-waikawa-gray-400">{{ result.profile.bio|truncatechars:135 }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <li class="text-gray-600 text-lg text-center mt-4">No results found.</li>
+{% endif %}

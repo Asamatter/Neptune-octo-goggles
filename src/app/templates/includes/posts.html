@@ -1,0 +1,260 @@
+{% load static %}
+{% load custom_tags %}
+<div class="flex items-center relative">
+  <div class="flex gap-2 ">
+    {% if post.author.profile.pic %}
+      <img src="{{ MEDIA_URL }}{{ post.author.profile.pic.url }}"
+           alt="Profile Image"
+           class="rounded-md w-[40px] h-[40px]">
+    {% else %}
+      <img src="{% static 'account/images/default_pic.jpg' %}"
+           alt="Default Profile Picture"
+           class="rounded-md w-[40px] h-[40px]">
+    {% endif %}
+    <div class="ml-1">
+      <a href="{% url 'account:profile' post.author.username %}">
+        <p class="text-sm  font-bold hover:text-gray-100 hover:underline">{{ post.author }}</p>
+      </a>
+      <a class="font-semibold "
+         href="{% url 'post_detail' post.slug %}">
+        <small class="text-xs text-gray-500">{{ post.created_at|elapsed_time }}</small>
+      </a>
+    </div>
+  </div>
+</div>
+<div class="my-2">
+  <a class="font-semibold break-words hover:text-gray-200"
+     href="{% url 'post_detail' post.slug %}">{{ post.title }}</a>
+</div>
+{% if post.content %}
+  <h2 class="text-waikawa-gray-300 text-base my-2">{{ post.content|remove_hashtags|truncatechars:340 }}</h2>
+{% endif %}
+{% if post.file %}
+  {% if post.file.name|lower|endswith:'.mp4' %}
+    <video class=" my-3 rounded-sm object-cover mx-auto"
+           controls
+           style="width:548px;
+                  height:300px">
+      <source src="{{ post.file.url }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  {% elif post.file.name|lower|endswith:'.jpg' or post.file.name|lower|endswith:'.jpeg' or post.file.name|lower|endswith:'.png' or post.file.name|lower|endswith:'.gif' or post.file.name|lower|endswith:'.webp' %}
+    <img src="{{ post.file.url }}"
+         alt="Image"
+         class="my-3 rounded-sm mx-auto object-cover thumbnail-image"
+         style="width: 548px;
+                height: 250px">
+  {% else %}
+    <p>This file type is not supported.</p>
+  {% endif %}
+{% endif %}
+<!-- TAG -->
+<div class="flex items-center gap-2 text-white text-opacity-75 font-semibold ">
+  <div>
+    {% for tag in post.tag_set.all %}
+      <a class="hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-fuchsia-400 hover:to-purple-600 hover:underline text-base relative"
+         href="{% url 'tag' tag.text %}?=72{{ tag.id }}45{{ tag.id }}82">#{{ tag.text }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% for get_view in posts_with_view_counts %}
+  {% if post.id == get_view.post.id %}
+    {% if get_view.view_count %}
+      <p class="text-sm font-semibold text-gray-500 my-1">{{ get_view.view_count }} Views</p>
+    {% else %}
+      <p class="text-sm font-semibold text-gray-500 my-1">No views yet :(</p>
+    {% endif %}
+  {% endif %}
+{% endfor %}
+<!--USERS LINK UPVOTE & DOWNVOTE-->
+<div class="flex items-center gap-2 text-gray-600 mt-2">
+  {% if user.is_authenticated %}
+    <form class="upvote-form"
+          method="POST"
+          action="{% url 'upvote' post.slug %}">
+      {% csrf_token %}
+      <div class="flex flex-col items-center">
+        <button type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke-width="1.5"
+               stroke="currentColor"
+               class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+          </svg>
+        </button>
+        <span class="upvote-count">{{ post.upvote_set.count }}</span>
+      </div>
+    </form>
+    <form class="downvote-form"
+          method="POST"
+          action="{% url 'downvote' post.slug %}">
+      {% csrf_token %}
+      <div class="flex flex-col items-center">
+        <button type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke-width="1.5"
+               stroke="currentColor"
+               class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+          </svg>
+        </button>
+        <span class="downvote-count">{{ post.downvote_set.count }}</span>
+      </div>
+    </form>
+  {% else %}
+    <!--NON USERS LINK UPVOTE & DOWNVOTE-->
+    <div class="flex flex-col items-center">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke-width="1.5"
+           stroke="currentColor"
+           class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+      </svg>
+      <span id="upvote-count-{{ post.id }}">{{ post.upvote_set.count }}</span>
+    </div>
+    <div class="flex flex-col items-center">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke-width="1.5"
+           stroke="currentColor"
+           class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+      </svg>
+      <span id="downvote-count-{{ post.id }}">{{ post.downvote_set.count }}</span>
+    </div>
+  {% endif %}
+  <!--COMMENT ICON -->
+  <div class="flex flex-col items-center mr-auto">
+    <svg xmlns="http://www.w3.org/2000/svg"
+         fill="none"
+         viewBox="0 0 24 24"
+         stroke-width="1.5"
+         stroke="currentColor"
+         class="w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+    </svg>
+    {{ post.total_comment_count }}
+  </div>
+  <!--BOOKMARK ICON -->
+  {% if user.is_authenticated %}
+    <!--REPOST ICON -->
+    <form class="repost-form"
+          method="post"
+          action="{% url 'repost' post.id %}"
+          data-post-id="{{ post.id }}">
+      {% csrf_token %}
+      <div class="flex flex-col items-center mr-2">
+        <div onclick="toggleDropdown('{{ post.id }}')"
+             class="flex flex-col items-center mr-2"
+             data-post-id="{{ post.id }}">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke-width="1.5"
+               stroke="currentColor"
+               class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+          </svg>
+          <span>{{ post.repost_set.all.count }}</span>
+        </div>
+      </div>
+      <div id="buttons-{{ post.id }}"
+           class="z-20 hidden absolute flex flex-col right-0 text-black rounded-sm opacity-80 bg-[#cfcfec] mr-0 p-4 transition-opacity duration-500">
+        {% if not post.has_reposted %}
+          <button class="hover:text-[#1A0FB3]" type="submit">Repost</button>
+          <button type="button"
+                  onclick="showContentField('{{ post.id }}')"
+                  id="quote-button-{{ post.id }}">Quote</button>
+        {% else %}
+          <button class="hover:text-[#1A0FB3]" type="submit">undone</button>
+        {% endif %}
+      </div>
+      <div id="contentField-{{ post.id }}"
+           class="hidden absolute right-0 left-0 flex flex-col z-50 ">
+        <div class="bg-white rounded-md p-4 border border-gray-300 m-2">
+          <div class="flex items-start space-x-4">
+            <!-- User Avatar -->
+            <div class="w-12 h-12 bg-gray-300 rounded-full">
+              {% if request.user.profile.pic %}
+              <a href="{% url 'account:profile' user.profile %}">
+                <img src="{{ MEDIA_URL }}{{ request.user.profile.pic.url }}"
+                     alt="Profile Image"
+                     class=" border-3 rounded-full w-12 h-12"/>
+              </a>
+            {% else %}
+              <a href="{% url 'account:profile' user.profile %}">
+                <img src="{% static 'account/images/default_pic.jpg' %}"
+                     alt="Default Profile Picture"
+                     class="border-3 rounded-full w-12 h-12"/>
+          
+              </a>
+            {% endif %}
+            </div>
+            <!-- Post Content -->
+            <div class="flex-grow">
+              <textarea name="content"
+                        rows="3"
+                        placeholder="Add a public comment..."
+                        class="w-full p-2 border rounded-md resize-none focus:ring-2  focus:outline-none focus:border-[#291094]"></textarea>
+              <div class="flex justify-end mt-2">
+                <button type="submit"
+                        class="px-2 py-1 bg-[#291094] text-white text-base rounded-md hover:bg-[#1e0b6e]">
+                  Repost
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <form class="bookmark-form-mainpage"
+          method="post"
+          action="{% url 'add_to_bookmark' post.slug %}">
+      {% csrf_token %}
+      <div class="flex flex-col items-center">
+        <button type="submit" class="text-gray-600 hover:text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               stroke-width="1.5"
+               stroke="currentColor"
+               class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+          </svg>
+        </button>
+        <span class="bookmark-count-home">{{ post.bookmark_set.all.count }}</span>
+      </div>
+    </form>
+  {% else %}
+    <!--REPOST ICON -->
+    <div class="flex flex-col items-center mr-2">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke-width="1.5"
+           stroke="currentColor"
+           class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" />
+      </svg>
+      <span>{{ post.repost_set.all.count }}</span>
+    </div>
+    <div class="flex flex-col items-center">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke-width="1.5"
+           stroke="currentColor"
+           class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+      </svg>
+      <span class="bookmark-count-home">{{ post.bookmark_set.all.count }}</span>
+    </div>
+  {% endif %}
+</div>

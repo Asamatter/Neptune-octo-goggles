@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="mt-12">
+    <h2 class="text-xl font-semibold mb-2">Delete Forever</h2>
+    {% if request.user == circle.host %}
+      <p class="text-red-600">Are you sure you want to delete your circle "{{ circle.name }}"?</p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-600 hover:bg-red-700 py-1 px-2 rounded my-3">Confirm</button>
+      </form>
+      <a href="{% url 'account:circle-detail' circle.name %}" class="text-lg hover:underline text-gray-400 hover:text-gray-600 mt-6 ml-1">Cancel</a>
+    {% else %}
+      <p class="mb-4 text-gray-600">You do not have permission to delete this post.</p>
+      <a href="{% url 'account:circle-detail' circle.name %}" class="text-lg hover:underline text-gray-400 hover:text-gray-600 mt-6 ml-1">Go back</a>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div id="post-template" class="text-black mt-9">
+    {% if request.user == profile.user %}
+      <!-- Remove profile pic & banner -->
+      <div class="flex items-center gap-4">
+        <form class="profile-pic-delete-form flex gap-2" method="POST" action="{% url 'account:remove_profile_pic' username=request.user.username %}">
+          {% csrf_token %}
+          {% if form.instance.pic %}
+            <img src="{{ form.instance.pic.url }}" class="h-[40px] w-[40px] rounded-md" alt="Profile Picture" />
+            <button class="bg-red-600 hover:bg-red-700 rounded-md px-1" type="submit">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          {% endif %}
+        </form>
+
+        <form class="delete-banner flex gap-2" method="POST" action="{% url 'account:remove_banner' username=request.user.username %}">
+          {% csrf_token %}
+          {% if form.instance.banner %}
+            <img src="{{ form.instance.banner.url }}" class="h-[40px] w-[40px] rounded-md" alt="banner" />
+            <button class="bg-red-600 hover:bg-red-700 rounded-md px-1" type="submit">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          {% endif %}
+        </form>
+      </div>
+
+      <!-- Edit profile -->
+      <form method="POST" enctype="multipart/form-data" class="mt-4 text-gray-300">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="{{ form.banner.id_for_label }}" class="block text-sm font-medium text-gray-600 mb-1">Banner</label>
+          <input type="file" id="{{ form.banner.id_for_label }}" name="{{ form.banner.html_name }}" class="mt-1 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm rounded-md px-4 py-2" style="border: 1px solid #1E1B4B;" />
+        </div>
+
+        <div class="form-group my-2">
+          <label for="{{ form.pic.id_for_label }}" class="block text-sm font-medium text-gray-600 mb-1">Profile Picture</label>
+          <input type="file" id="{{ form.pic.id_for_label }}" name="{{ form.pic.html_name }}" class="mt-1 block w-full shadow-sm sm:text-sm rounded-md px-4 py-2" style="border: 1px solid #1E1B4B;" />
+        </div>
+
+        <div class="form-group my-2">
+          <label for="{{ form.website.id_for_label }}" class="block text-sm font-medium text-gray-600 mb-1">Website</label>
+          <input type="text" id="{{ form.website.id_for_label }}" name="{{ form.website.html_name }}" value="{{ form.website.value }}" class="bg-transparent text-gray-300 rounded-lg focus:outline-none focus:border-blue-800 focus:ring-2 w-full shadow-sm p-2" style="border: 1px solid #1E1B4B;" />
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.bio.id_for_label }}" class="block text-sm font-medium text-gray-600 mb-1">Bio</label>
+          <textarea id="{{ form.bio.id_for_label }}" name="{{ form.bio.html_name }}" class="bg-transparent text-gray-300 scrollbar rounded-lg focus:outline-none focus:border-blue-800 focus:ring-2 w-full h-[100px] shadow-sm p-2" style="border: 1px solid #1E1B4B;">{{ form.bio.value }}</textarea>
+        </div>
+
+        <div class="form-group mt-2 text-black">
+          <label for="{{ form.location.id_for_label }}" class="block text-sm font-medium text-gray-600 mb-1">Location</label>
+          {{ form.location }}
+        </div>
+
+        <button class="btn btn-success mt-4 px-4 py-2 text-white font-semibold rounded-md bg-indigo-600 hover:bg-indigo-700" type="submit">Save</button>
+      </form>
+    {% else %}
+      you are not allowed
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{% block content %}
+  <div id="circle-template" class="container mx-auto mt-8">
+    <div id="groups">
+      <h2 class="text-2xl font-semibold mb-4">Groups</h2>
+
+      <div class="mt-4">
+        <form hx-trigger="submit">
+          <input value="" placeholder="Search" name="query" type="query" hx-get="{% url 'group_search' %}" hx-trigger="keyup changed delay:500ms" hx-target="#group-search-results" hx-swap="innerHTML" hx-select="#group-search-results" class="mb-4 px-4 w-full text-gray-200 bg-[#2C2D40] rounded-md py-2 focus:outline-none focus:ring-1 focus:ring-[#8C5E58]" />
+        </form>
+      </div>
+
+      <div id="group-search-results">
+        {% include 'includes/htmx/group_search_results.html' %}
+      </div>
+
+
+      {% if results.paginator.num_pages > 1 %}
+        <div class="pagination mx-auto mt-6 fixed bottom-0">
+          <span class="step-links flex items-center">
+            {% if results.has_previous %}
+              <a href="?page={{ results.previous_page_number }}" class="mr-2 px-1 text-sm hover:text-white hover:underline" hx-get="?page={{ results.previous_page_number }}" hx-trigger="click" hx-target="#groups" hx-swap="innerHTML" hx-select="#groups">previous</a>
+            {% endif %}
+            <span class="current bg-orange-950 shadow-inner text-white rounded-sm px-1">Page {{ results.number }} of {{ results.paginator.num_pages }}.</span>
+            {% if results.has_next %}
+              <a href="?page={{ results.next_page_number }}" class="ml-2 px-1 text-sm hover:text-white hover:underline" hx-get="?page={{ results.next_page_number }}" hx-trigger="click" hx-target="#groups" hx-swap="innerHTML" hx-select="#groups">next</a>
+            {% endif %}
+          </span>
+        </div>
+      {% endif %}
+
+
+      
+    </div>
+  </div>
+{% endblock %}

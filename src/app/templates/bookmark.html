@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+
+<div id="post-template" class="mt-4">
+  <h1 class="text-2xl font-bold mb-4">Bookmarks 
+    <span class="bookmark-count">{{ user.bookmark_set.all.count }}</span>
+  </h1>
+
+  <div class="" id="bookmark-container"> 
+    {% for bookmark in bookmarks %}
+    <div class="bg-gray-800 rounded-md shadow relative mb-4 " id="{{ bookmark.post.slug }}">
+      <div class="flex absolute right-0">
+        <form class="bookmark-form" action="{% url 'remove_from_bookmark' bookmark.post.slug %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="bookmark-button {% if bookmarked %}bookmark-active{% endif %}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l1.664 1.664M21 21l-1.5-1.5m-5.485-1.242L12 17.25 4.5 21V8.742m.164-4.078a2.15 2.15 0 011.743-1.342 48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185V19.5M4.664 4.664L19.5 19.5" />
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="mt-4 font-semibold text-white hover:text-white p-2">
+        <div class="flex gap-2 mb-2">
+          {% if bookmark.post.author.profile.pic %}
+          <img  src="{{ MEDIA_URL }}{{ bookmark.post.author.profile.pic.url }}" alt="Profile Image" class="rounded-md border-2 w-[40px] h-[40px]">
+          {% else %}
+          <img src="{% static 'account/images/default_pic.jpg' %}" alt="Default Profile Picture" class="rounded-md border-2 w-[40px] h-[40px] ">
+          {% endif %}
+          <div class="ml-1">
+            <a href="{% url 'account:profile' bookmark.post.author.username %}">
+              <p class="text-sm font-bold hover:underline hover:text-white">{{ bookmark.post.author }}</p>
+            </a>
+            <small class="text-xs ">{{ bookmark.post.created_at|timesince }} ago</small>
+          </div>
+        </div>
+        
+        <h2><a class="hover:text-waikawa-gray-400 my-3" href="{% url 'post_detail' bookmark.post.slug %}">{{ bookmark.post.title }}</a></h2>
+
+        {% if bookmark.post.content %}
+          <p class="hover:cursor-pointer text-waikawa-gray-200 text-base my-1">
+            {{ bookmark.post.content|remove_hashtags|linkify_content|safe }}
+          </p>
+        {% endif %}
+
+        <!-- TAG -->
+        <div class="flex items-center gap-2 my-1">
+          <div class="text-orange-300 font-semibold">
+            {% for tag in bookmark.post.tag_set.all %}
+              <a class="hover:text-pink-300 hover:underline" href="{% url 'tag' tag.text %}?={{ tag.id }}">#{{ tag.text }}</a>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if bookmark.post.file %}
+          {% if bookmark.post.file.name|lower|endswith:'.mp4' %}
+            <video class="my-3 rounded-sm object-cover" controls style="width:510px; height:300px;">
+              <source src="{{ bookmark.post.file.url }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          {% elif bookmark.post.file.name|lower|endswith:'.jpg' or bookmark.post.file.name|lower|endswith:'.jpeg' or bookmark.post.file.name|lower|endswith:'.png' or bookmark.post.file.name|lower|endswith:'.gif' %}
+            <img src="{{ bookmark.post.file.url }}" alt="Image" class="my-3  rounded-sm object-cover" style="width:510px; height:270px;">
+          {% else %}
+            <p>This file type is not supported.</p>
+          {% endif %}
+        {% endif %}
+
+        <div class="flex items-center justify-between text-gray-500 my-2">
+          <div class="flex gap-2 text-gray-500">
+            <form class="upvote-form" method="POST" action="{% url 'upvote' bookmark.post.slug %}">
+              {% csrf_token %}
+              <div class="flex items-center flex-col ">
+                <button type="submit">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 ">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
+                  </svg>
+                  <span class="upvote-count">{{ bookmark.post.upvote_set.count }}</span>
+                </button>
+              </div>
+            </form>
+
+            <form class="downvote-form" method="POST" action="{% url 'downvote' bookmark.post.slug %}">
+              {% csrf_token %}
+              <div class="flex items-center flex-col">
+                <button type="submit">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                  </svg> 
+                </button>
+                <span class="downvote-count">{{ bookmark.post.downvote_set.count }}</span>
+              </div>
+            </form>
+
+            <p class="flex items-center flex-col">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+              </svg>{{ bookmark.post.comments.count }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!--VOTING-->
+        {% if user|has_voted_for_post:bookmark.post %}
+        <!-- Results Section -->
+        <div id="results-card-container"  class="results-section mb-4 mt-2 p-2 rounded-md shadow-inner" style="border:1px solid #4d4873;">
+          <h3 class="my-2 text-gray-500">Results:</h3>
+          {% for choice in bookmark.post.choice_set.all %}
+          <div class="flex items-center gap-2">
+            <p class="flex justify-between shadow-inner text-gray-300 text-semibold bg-gradient-to-r from-[#8f4972] to-transparent hover:bg-pink-700 rounded-sm p-1 my-1 w-[300px] text-sm">
+              <span class="truncate flex">{{ choice.title }}
+                {% for user in choice.vote_set.all %}
+                {% if request.user == user.user %}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6 text-green-500 -mt-1">
+                  <path fill-rule="evenodd" d="M6.293 9.293a1 1 0 0 1 1.414 0L10 11.586l2.293-2.293a1 1 0 0 1 1.414 1.414l-3 3a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 0-1.414z"/>
+                </svg>
+                {% endif %}
+                {% endfor %}
+              </span>
+              {% if choice.vote_count > 0 %}
+              <div class="relative w-full h-4 rounded-md bg-gradient-to-r from-blue-500 to-purple-500">
+                <div class="absolute top-0 left-0 h-full rounded-md bg-[#8f4972]" style=""></div>
+              </div>
+              {% endif %}
+              <span class="text-gray-500 semibold-bold">{{ choice.vote_set.count }} Votes
+                {% for poll_total in count|post_total_votes %}
+                {% if poll_total.id == bookmark.post.id %}
+                {{ choice.vote_set.count|calculate_percentage:poll_total.total_votes|floatformat:1 }}%
+                {% endif %}
+                {% endfor %}
+              </span>
+              <div class="flex">
+                {% for user_vote in choice.vote_set.all|slice:":2"  %}
+                {% if user_vote %}
+                {% if user_vote.user.profile.pic %}
+                <a href="{% url 'account:profile' user_vote.user %}">
+                  <img src="{{ MEDIA_URL }}{{ user_vote.user.profile.pic.url }}" alt="Profile Image" class=" border-3 rounded-full mx-2"  style="width:25px; height:25px; border: 3px solid transparent;" />
+                </a>
+                {% else %}
+                <a href="{% url 'account:profile' user_vote.user %}">
+                  <img src="{% static 'account/images/default_pic.jpg' %}" alt="Default Profile Picture" class="border-3 rounded-full mx-2"  style="width:25px; height:25px; border: 3px solid transparent;"/>
+                </a>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+                {% with remaining_votes=choice.vote_set.count|subtract:2|add:"0" %}
+                {% if remaining_votes > 0 %}
+                <a class="text-sm" href=""> +{{ remaining_votes }}</a> 
+                {% endif %}
+                {% endwith %}
+              </div>
+            </p>
+          </div>
+          {% endfor %}
+          <p class="mt-2 text-sm text-gray-400">
+            {% for poll_total in count|post_total_votes %}
+            {% if poll_total.id == bookmark.post.id %}
+            {{ poll_total.total_votes }} Votes
+            {% endif %}
+            {% endfor %}
+          </p>
+          <p id="message-vote" class="mt-2 text-sm text-gray-400">You have already voted for this post.</p>
+        </div>
+        {% else %}
+        <!-- Voting Form -->
+        <div id="voting-form-container"> 
+          <form class="vote-form mx-2" method="POST" action="{% url 'home' %}">
+            {% csrf_token %}
+            <input type="hidden" name="post_slug" value="{{ bookmark.post.slug }}">
+            {% for choice in bookmark.post.choice_set.all %}
+            <div class="flex justify-between shadow-inner text-gray-300 text-semibold bg-gradient-to-r from-[#8f4972] to-transparent hover:bg-pink-700 rounded-sm p-1 my-1 w-[300px] text-sm">
+              {% if bookmark.post.choice_set.all %}
+              {% if choice.title|length > 15 %}
+              <button type="submit" class="choice-button text-xs text-left hover:text-gray-100" hover:font-semibold name="choice" value="{{ choice.id }}" data-choice-title="{{ choice.title }}">
+                <p class="">{{ choice.title|truncatechars:24  }}</p>
+              </button>
+              {% else %}
+              <button type="submit" class="choice-button text-base hover:text-gray-100" hover:font-semibold name="choice" value="{{ choice.id }}" data-choice-title="{{ choice.title }}">
+                <p class="">{{ choice.title }}</p>
+              </button>
+              {% endif %}
+              {% endif %}
+              <span class="vote-count text-gray-500 semibold-bold" data-choice="{{ choice.id }}">{{ choice.vote_set.count }} Votes
+                {% for poll_total in count|post_total_votes %}
+                {% if poll_total.id == bookmark.post.id %}
+                {{ choice.vote_set.count|calculate_percentage:poll_total.total_votes|floatformat:1 }}%
+                {% endif %}
+                {% endfor %}
+              </span>
+            </div>
+            {% endfor %}
+          </form>
+          {% if post.choice_set.count > 0 %}
+          <p class="text-sm text-gray-400 mb-3">
+            {% for poll_total in count|post_total_votes %}
+            {% if poll_total.id == bokkmark.post.id %}
+            Votes: {{ poll_total.total_votes }}
+            {% endif %}
+            {% endfor %}
+          </p>
+          {% endif %}
+          <hr class="text-gray-700 my-3 shadow-sm rounded-xl">
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% empty %}
+    <p>You don't have any bookmarks yet.</p>
+  
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

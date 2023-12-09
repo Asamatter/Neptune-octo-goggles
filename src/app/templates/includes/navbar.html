@@ -1,0 +1,107 @@
+{% load static %}
+<nav class="bg-[#181A1C] sticky z-50 top-0 px md:px-20 py-2 flex justify-between items-center">
+  <a class="navbar-brand font-sofia-sans-condensed text-red-500 hover:text-red-500 font-bold text-3xl ml-4" href="{% url 'home' %}"><span class="text-gray-300">Nep</span>tune</a>
+  {% if user.is_authenticated %}
+    <div class="flex items-center text-white ml-auto mt-2">
+      {% if request.resolver_match.url_name == 'profile' %}
+        {% if user.profile.id == profile.user.id %}
+          {% if new_message %}
+            <a class="" href="{% url 'account:inbox' request.user.username %}"><span class="bg-red-600 hover:text-white hover:px-3 text-xs px-1 rounded-full absolute top-4 ml-3">{{ new_message }}</span></a>
+          {% else %}
+            <a class="" href="{% url 'account:inbox' request.user.username %}"><span class="bg-red-600 hover:text-white hover:px-3 text-xs px-1 rounded-full absolute top-4 ml-3">{{ new_message }}</span></a>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    </div>
+    {% if user.profile.pic %}
+      <a href="{% url 'account:profile' request.user.username %}"><img src="{{ MEDIA_URL }}{{ user.profile.pic.url }}" alt="Profile Image" class="border-3 rounded-full mx-2" style="width:37px;
+                    height:37px;
+                    border: 3px solid transparent" /></a>
+    {% else %}
+      <a href="{% url 'account:profile' request.user.username %}"><img src="{% static 'account/images/default_pic.jpg' %}" alt="Default Profile Picture" class="border-3 rounded-full mx-2" style="width:37px;
+                    height:37px;
+                    border: 3px solid transparent" /></a>
+    {% endif %}
+  {% else %}
+    <!-- Burger Icon -->
+    <div id="BurgerIcon" class="text-gray-600 px-2 cursor-pointer md:hidden block" style="z-index: 50">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+        <path id="BurgerPath" stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
+    </div>
+    <!-- Burger Card -->
+    <div id="Card-Burger" class="lg:hidden md:hidden hidden fixed h-screen top-0 bg-[#00014C] w-[400px] right-0 p-4 transition duration-700 ease-in-out z-51">
+      <div class="mt-20 z-50">
+        <h2 class="text-xl text-[#FCDAFF] font-bold mb-4">Join now</h2>
+        <p class="text-[#FCDAFF]">Start connecting, sharing, and discovering in a vibrant and engaging community!</p>
+        <!-- LINKS -->
+        <div class="flex gap-3 my-6">
+          <div>
+            <a href="{% url 'account:login' %}"><button class="ml-1 bg-indigo-600 hover:bg-indigo-700 text-gray-200 font-semibold py-1 px-3 rounded">Login</button></a>
+          </div>
+          <div>
+            <a href="{% url 'account:register' %}"><button class="ml-1 bg-[#454261] hover:opacity-90 text-white font-semibold py-1 px-3 rounded">Sign up</button></a>
+          </div>
+        </div>
+      </div>
+      <div class="text-white list-none">
+        <div class="ml-3 rounded-md bg-opacity-75 backdrop-blur-lg text-white mr-auto transition-opacity duration-300 ease-in-out" style="width:280px" id="search-results-nav"></div>
+      </div>
+      <form class="absolute bottom-0" id="search-form-nav" method="GET">
+        <input id="search-input-nav" type="text" name="query" placeholder="Search For anything" class="top-0 sticky mb-2 text-gray-200 bg-transparent w-[300px] rounded-sm px-4 py-2 focus:ring-1 focus:ring-white" style="border:0.8px solid gray" />
+      </form>
+    </div>
+  {% endif %}
+</nav>
+<script>
+  const burgerIcon = document.getElementById('BurgerIcon')
+  const cardburger = document.getElementById('Card-Burger')
+  
+  function closeCard() {
+    cardburger.classList.add('hidden')
+    burgerIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>'
+  }
+  
+  burgerIcon.addEventListener('click', () => {
+    cardburger.classList.toggle('hidden')
+  
+    // Change the burger icon to "X" when the card is shown
+    if (!cardburger.classList.contains('hidden')) {
+      burgerIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75l10.5 10.5m0-10.5L6.75 17.25" /></svg>'
+    } else {
+      // Reset the burger icon to the default "Burger" shape
+      burgerIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>'
+    }
+  })
+  
+  document.addEventListener('mousedown', (event) => {
+    if (!cardburger.contains(event.target) && !burgerIcon.contains(event.target)) {
+      closeCard()
+    }
+  })
+  
+  document.getElementById('search-form-nav').addEventListener('submit', function (event) {
+    event.preventDefault()
+    var query = document.getElementById('search-input-nav').value
+    var url = '/search/?query=' + encodeURIComponent(query)
+  
+    var xhr = new XMLHttpRequest()
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        document.getElementById('search-results-nav').innerHTML = xhr.responseText
+      }
+    }
+    xhr.open('GET', url, true)
+    xhr.send()
+  })
+  
+  document.addEventListener('click', function (event) {
+    const searchResults = document.getElementById('search-results-nav')
+    const searchForm = document.getElementById('search-form-nav')
+  
+    // Check if the click target is outside the search area
+    if (!searchResults.contains(event.target) && !searchForm.contains(event.target)) {
+      searchResults.innerHTML = '' // Clear the search results
+    }
+  })
+</script>

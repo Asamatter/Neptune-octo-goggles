@@ -1,0 +1,81 @@
+{% load static %}
+{% load custom_tags %}
+<div class="reply-line"></div>
+<div class="reply my-1">
+  <div class="flex items-center gap-2">
+    {% if reply.user.profile.pic %}
+      <a href="{% url 'account:profile' reply.user.username %}">
+        <img src="{{ MEDIA_URL }}{{ reply.user.profile.pic.url }}"
+             alt="Profile Image"
+             class=" border-3 rounded-md ml-2"
+             style="width:34px;
+                    height:34px;
+                    border: 3px solid transparent" />
+      </a>
+    {% else %}
+      <a href="{% url 'account:profile' reply.user.username %}">
+        <img src="{% static 'account/images/default_pic.jpg' %}"
+             alt="Default Profile Picture"
+             class="border-3 rounded-md ml-2"
+             style="width:34px;
+                    height:34px;
+                    border: 3px solid transparent" />
+      </a>
+    {% endif %}
+    <div class="flex justify-between items-center w-full gap-2">
+      <div>
+        <p class="text-gray-400 text-sm font-semibold">{{ reply.user.username }}</p>
+        <small class="text-gray-600 ">{{ reply.created_at|elapsed_time }}</small>
+      </div>
+      {% if request.user.id == reply.user.id %}
+        <form class="reply_delete"
+              method="post"
+              action="{% url 'reply-delete' post_pk=post.id comment_pk=comment.id reply_pk=reply.id %}">
+          {% csrf_token %}
+          <button type="submit" class="mb-3 text-red-800">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="h-4 w-4"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor"
+                 stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <title>Delete reply</title>
+          </svg>
+        </button>
+        <input type="hidden" name="reply_id" value="{{ reply.id }}" />
+      </form>
+    {% endif %}
+  </div>
+</div>
+</div>
+<a href="#"
+   class="reply-link-sub hover:text-white hover:underline"
+   name="reply_content"
+   value="{{ reply.content }}"
+   data-reply-id="{{ reply.id }}"
+   onclick="captureReplyId(this); return false;">
+  <p class="ml-3 text-salt-box-300 mb-3">{{ reply.content }}</p>
+</a>
+<form method="post"
+      class="replyToReplyForm hidden rounded-md my-1 text-white ml-2"
+      action="{% url 'post_detail' post.slug %}"
+      data-reply-id="{{ reply.id }}">
+  {% csrf_token %}
+  <input type="hidden" name="reply_username" value="{{ reply.user.username }}" />
+  <!--keep-->
+  <input type="hidden" name="comment_id" value="{{ comment.id }}" />
+  <input type="hidden" name="reply_id" value="{{ reply.id }}" />
+  <input type="hidden" name="reply_content" value="{{ reply.content }}" />
+  <!--current user-->
+  <input type="hidden" name="current_user" value="{{ request.user }}" />
+  <input class="bg-transparent border rounded-md px-2"
+         placeholder="reply to {{ reply.user.username }}"
+         type="text"
+         id="reply-content"
+         name="content"
+         required />
+  <input type="hidden" name="action" value="reply_submit" />
+  <button type="submit">Reply</button>
+</form>
